@@ -37,7 +37,7 @@ jobs:
           exit 1
 
       - name: Test Cart page
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/cart
           docker run --rm \
@@ -48,7 +48,7 @@ jobs:
             --filter "FullyQualifiedName~CartPageFeatureFeature"
 
       - name: Test Checkout page
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/checkout
           docker run --rm \
@@ -59,7 +59,7 @@ jobs:
             --filter "FullyQualifiedName~CheckoutFeatureFeature"
 
       - name: Test Management page
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/management
           docker run --rm \
@@ -70,7 +70,7 @@ jobs:
             --filter "FullyQualifiedName~ManagemrentPageFeatureFeature"
 
       - name: Test Product page
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/product
           docker run --rm \
@@ -81,7 +81,7 @@ jobs:
             --filter "FullyQualifiedName~ProductPageFeatureFeature"
 
       - name: Test Sign in and sign up
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/sign
           docker run --rm \
@@ -92,7 +92,7 @@ jobs:
             --filter "FullyQualifiedName~SignInAndSignUpFeature"
 
       - name: Test Wishlist
-        continue-on-error: true
+        if: always()
         run: |
           mkdir -p test-results/wishlist
           docker run --rm \
