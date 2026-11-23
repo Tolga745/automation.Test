@@ -9,31 +9,9 @@ permissions:
 
 jobs:
   feature-tests:
-    name: ${{ matrix.feature }}
+    name: Run automation tests feature by feature
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - feature: Cart page
-            artifact: cart
-            filter: CartPageFeatureFeature
-          - feature: Checkout page
-            artifact: checkout
-            filter: CheckoutFeatureFeature
-          - feature: Management page
-            artifact: management
-            filter: ManagemrentPageFeatureFeature
-          - feature: Product page
-            artifact: product
-            filter: ProductPageFeatureFeature
-          - feature: Sign in and sign up
-            artifact: sign
-            filter: SignInAndSignUpFeature
-          - feature: Wishlist
-            artifact: wishlist
-            filter: WishlistFeatureFeature
 
     steps:
       - name: Check out automation tests
@@ -55,21 +33,93 @@ jobs:
           echo "GitHub Pages website did not become reachable"
           exit 1
 
-      - name: Run Playwright tests
+      - name: Test Cart page
+        id: cart
+        continue-on-error: true
         run: |
-          mkdir -p "test-results/${{ matrix.feature }}"
+          mkdir -p test-results/cart
           docker run --rm \
             --env PLAYWRIGHT_HEADLESS=true \
             --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
-            --volume "${{ github.workspace }}/test-results/${{ matrix.feature }}:/src/test-results" \
+            --volume "${{ github.workspace }}/test-results/cart:/src/test-results" \
             automation-tests:ci \
-            --filter "FullyQualifiedName~${{ matrix.filter }}"
+            --filter "FullyQualifiedName~CartPageFeatureFeature"
+
+      - name: Test Checkout page
+        id: checkout
+        continue-on-error: true
+        run: |
+          mkdir -p test-results/checkout
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results/checkout:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~CheckoutFeatureFeature"
+
+      - name: Test Management page
+        id: management
+        continue-on-error: true
+        run: |
+          mkdir -p test-results/management
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results/management:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~ManagemrentPageFeatureFeature"
+
+      - name: Test Product page
+        id: product
+        continue-on-error: true
+        run: |
+          mkdir -p test-results/product
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results/product:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~ProductPageFeatureFeature"
+
+      - name: Test Sign in and sign up
+        id: sign
+        continue-on-error: true
+        run: |
+          mkdir -p test-results/sign
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results/sign:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~SignInAndSignUpFeature"
+
+      - name: Test Wishlist
+        id: wishlist
+        continue-on-error: true
+        run: |
+          mkdir -p test-results/wishlist
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results/wishlist:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~WishlistFeatureFeature"
 
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: automation-results-${{ matrix.artifact }}
-          path: test-results/${{ matrix.feature }}/
+          name: automation-test-results
+          path: test-results/
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Fail when a feature has failed tests
+        if: >-
+          steps.cart.outcome == 'failure' ||
+          steps.checkout.outcome == 'failure' ||
+          steps.management.outcome == 'failure' ||
+          steps.product.outcome == 'failure' ||
+          steps.sign.outcome == 'failure' ||
+          steps.wishlist.outcome == 'failure'
+        run: exit 1
