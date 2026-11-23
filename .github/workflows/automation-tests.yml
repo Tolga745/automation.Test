@@ -1,19 +1,39 @@
 name: Run website automation tests
 
 on:
-  push:
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *"
 
 permissions:
   contents: read
 
 jobs:
-  automation-tests:
+  feature-tests:
+    name: ${{ matrix.feature }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - feature: Cart page
+            artifact: cart
+            filter: CartPageFeatureFeature
+          - feature: Checkout page
+            artifact: checkout
+            filter: CheckoutFeatureFeature
+          - feature: Management page
+            artifact: management
+            filter: ManagemrentPageFeatureFeature
+          - feature: Product page
+            artifact: product
+            filter: ProductPageFeatureFeature
+          - feature: Sign in and sign up
+            artifact: sign
+            filter: SignInAndSignUpFeature
+          - feature: Wishlist
+            artifact: wishlist
+            filter: WishlistFeatureFeature
 
     steps:
       - name: Check out automation tests
@@ -36,25 +56,20 @@ jobs:
           exit 1
 
       - name: Run Playwright tests
-        id: tests
-        continue-on-error: true
         run: |
-          mkdir -p test-results
+          mkdir -p "test-results/${{ matrix.feature }}"
           docker run --rm \
             --env PLAYWRIGHT_HEADLESS=true \
             --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
-            --volume "${{ github.workspace }}/test-results:/src/test-results" \
-            automation-tests:ci
+            --volume "${{ github.workspace }}/test-results/${{ matrix.feature }}:/src/test-results" \
+            automation-tests:ci \
+            --filter "FullyQualifiedName~${{ matrix.filter }}"
 
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: automation-test-results
-          path: test-results/
+          name: automation-results-${{ matrix.artifact }}
+          path: test-results/${{ matrix.feature }}/
           if-no-files-found: warn
           retention-days: 30
-
-      - name: Fail the job when tests fail
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
