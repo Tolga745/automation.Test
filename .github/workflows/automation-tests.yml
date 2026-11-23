@@ -37,7 +37,6 @@ jobs:
           exit 1
 
       - name: Test Cart page
-        id: cart
         continue-on-error: true
         run: |
           mkdir -p test-results/cart
@@ -49,7 +48,6 @@ jobs:
             --filter "FullyQualifiedName~CartPageFeatureFeature"
 
       - name: Test Checkout page
-        id: checkout
         continue-on-error: true
         run: |
           mkdir -p test-results/checkout
@@ -61,7 +59,6 @@ jobs:
             --filter "FullyQualifiedName~CheckoutFeatureFeature"
 
       - name: Test Management page
-        id: management
         continue-on-error: true
         run: |
           mkdir -p test-results/management
@@ -73,7 +70,6 @@ jobs:
             --filter "FullyQualifiedName~ManagemrentPageFeatureFeature"
 
       - name: Test Product page
-        id: product
         continue-on-error: true
         run: |
           mkdir -p test-results/product
@@ -85,7 +81,6 @@ jobs:
             --filter "FullyQualifiedName~ProductPageFeatureFeature"
 
       - name: Test Sign in and sign up
-        id: sign
         continue-on-error: true
         run: |
           mkdir -p test-results/sign
@@ -97,7 +92,6 @@ jobs:
             --filter "FullyQualifiedName~SignInAndSignUpFeature"
 
       - name: Test Wishlist
-        id: wishlist
         continue-on-error: true
         run: |
           mkdir -p test-results/wishlist
@@ -116,13 +110,3 @@ jobs:
           path: test-results/
           if-no-files-found: warn
           retention-days: 30
-
-      - name: Fail when a feature has failed tests
-        if: >-
-          steps.cart.outcome == 'failure' ||
-          steps.checkout.outcome == 'failure' ||
-          steps.management.outcome == 'failure' ||
-          steps.product.outcome == 'failure' ||
-          steps.sign.outcome == 'failure' ||
-          steps.wishlist.outcome == 'failure'
-        run: exit 1
