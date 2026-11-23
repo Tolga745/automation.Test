@@ -1,0 +1,4 @@
+.env
+test-results/
+**/bin/
+**/obj/

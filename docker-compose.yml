@@ -1,0 +1,13 @@
+services:
+  automation-tests:
+    image: automation-tests:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      PLAYWRIGHT_HEADLESS: "true"
+    env_file:
+      - .env
+    working_dir: /src/test-results
+    volumes:
+      - ./test-results:/src/test-results

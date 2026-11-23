@@ -1,0 +1,60 @@
+name: Run website automation tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  automation-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out automation tests
+        uses: actions/checkout@v4
+
+      - name: Build automation test image
+        run: docker build -t automation-tests:ci .
+
+      - name: Wait for the GitHub Pages website
+        run: |
+          for attempt in {1..12}; do
+            if curl --fail --silent --show-error --location \
+              https://tolga745.github.io/ > /dev/null; then
+              exit 0
+            fi
+            echo "Website is not ready yet (attempt ${attempt}/12)"
+            sleep 10
+          done
+          echo "GitHub Pages website did not become reachable"
+          exit 1
+
+      - name: Run Playwright tests
+        id: tests
+        continue-on-error: true
+        run: |
+          mkdir -p test-results
+          docker run --rm \
+            --env PLAYWRIGHT_HEADLESS=true \
+            --volume "${{ github.workspace }}/.env.example:/src/.env:ro" \
+            --volume "${{ github.workspace }}/test-results:/src/test-results" \
+            automation-tests:ci
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automation-test-results
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Fail the job when tests fail
+        if: steps.tests.outcome == 'failure'
+        run: exit 1
